@@ -7,27 +7,33 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    try {
-      const data = await login(email, password);
+    if (!email || !password) {
+      alert("Please enter email and password");
+      return;
+    }
 
-      // save token + user
+    setLoading(true);
+
+    try {
+      const response = await login(email, password);
+      const data = response.data;
+
+      // Save token + user
       saveAuth(data.token, data.user);
 
-      alert("Login successful ✅");
-
-      // role-based redirect
-      if (data.user.role === "admin" || data.user.role === "clinician") {
+      if (data.user.role === "clinician") {
         navigate("/clinician-dashboard");
       } else {
         navigate("/patient-dashboard");
       }
     } catch (err) {
-      alert(
-        err.response?.data?.message ||
-        "Invalid email or password"
-      );
+      console.error("Login error:", err);
+      alert("Invalid email or password. Please register first.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,7 +57,9 @@ function Login() {
       />
       <br />
 
-      <button onClick={handleLogin}>Login</button>
+      <button onClick={handleLogin} disabled={loading}>
+        {loading ? "Logging in..." : "Login"}
+      </button>
     </div>
   );
 }

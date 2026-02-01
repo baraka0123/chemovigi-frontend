@@ -7,23 +7,25 @@ function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
-    try {
-      await register({
-        name,
-        email,
-        password,
-        role: "patient", // default role
-      });
+    if (!name || !email || !password) {
+      alert("Please fill all fields");
+      return;
+    }
 
-      alert("Registered successfully ✅ Now login.");
+    setLoading(true);
+
+    try {
+      await register({ name, email, password });
+      alert("Registered successfully! Now login.");
       navigate("/login");
     } catch (err) {
-      alert(
-        err.response?.data?.message ||
-        "Registration failed. Email may already exist."
-      );
+      console.error("Register error:", err);
+      alert("Registration failed. Email may already exist.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -54,7 +56,9 @@ function Register() {
       />
       <br />
 
-      <button onClick={handleRegister}>Register</button>
+      <button onClick={handleRegister} disabled={loading}>
+        {loading ? "Registering..." : "Register"}
+      </button>
     </div>
   );
 }
